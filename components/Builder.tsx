@@ -3,7 +3,7 @@ import { SiteData, UserProfile, BlockData, BlockType, SavedBento } from '../type
 import Block from './Block';
 import EditorSidebar from './EditorSidebar';
 import ProfileDropdown from './ProfileDropdown';
-import { exportSite } from '../services/exportService';
+import { exportSite, type ExportDeploymentTarget } from '../services/exportService';
 import { getOrCreateActiveBento, updateBentoData, setActiveBentoId, getBento } from '../services/storageService';
 import { Download, Layout, Share2, X, Check, Plus, Eye, Smartphone, Monitor, Home, Globe, BarChart3, RefreshCw, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,6 +11,69 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface BuilderProps {
   onBack?: () => void;
 }
+
+const DEPLOY_TARGETS: Record<
+  ExportDeploymentTarget,
+  { label: string; includes: string[]; steps: string[] }
+> = {
+  vercel: {
+    label: 'Vercel',
+    includes: ['vercel.json'],
+    steps: [
+      'Unzip the downloaded package',
+      'Create a new Vercel project (Framework: Other / No build)',
+      'Deploy (your folder is the project root)',
+    ],
+  },
+  netlify: {
+    label: 'Netlify',
+    includes: ['netlify.toml'],
+    steps: [
+      'Unzip the downloaded package',
+      'Netlify → Add new site → Deploy manually (drag & drop the folder)',
+      'Done (SPA redirect is included)',
+    ],
+  },
+  'github-pages': {
+    label: 'GitHub Pages',
+    includes: ['.github/workflows/deploy.yml'],
+    steps: [
+      'Unzip the downloaded package',
+      'Create a new GitHub repository and push files to the main branch',
+      'GitHub → Settings → Pages → Source: GitHub Actions',
+      'Wait for the workflow to finish, then open your Pages URL',
+    ],
+  },
+  docker: {
+    label: 'Docker (nginx)',
+    includes: ['Dockerfile', 'nginx.conf'],
+    steps: [
+      'Unzip the downloaded package',
+      'Run: docker build -t my-bento .',
+      'Run: docker run --rm -p 8080:80 my-bento',
+      'Open: http://localhost:8080',
+    ],
+  },
+  vps: {
+    label: 'VPS (nginx)',
+    includes: ['nginx.conf'],
+    steps: [
+      'Unzip the downloaded package',
+      'Copy files to your server (example: /var/www/bento)',
+      'Configure nginx (use nginx.conf as a starting point)',
+      'Reload nginx and test your domain',
+    ],
+  },
+  heroku: {
+    label: 'Heroku',
+    includes: ['server.js', 'Procfile', 'package.json'],
+    steps: [
+      'Unzip the downloaded package',
+      'Create a Heroku app and deploy the folder as a Node web app',
+      'Heroku will run `npm start` and serve your static page',
+    ],
+  },
+};
 
 const Builder: React.FC<BuilderProps> = ({ onBack }) => {
   // Load initial data from localStorage
@@ -23,6 +86,28 @@ const Builder: React.FC<BuilderProps> = ({ onBack }) => {
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
   const [viewMode, setViewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [isLoading, setIsLoading] = useState(true);
+
+  const [deployTarget, setDeployTarget] = useState<ExportDeploymentTarget>(() => {
+    try {
+      const stored = localStorage.getItem('openbento_deploy_target');
+      if (
+        stored === 'vercel' ||
+        stored === 'netlify' ||
+        stored === 'github-pages' ||
+        stored === 'docker' ||
+        stored === 'vps' ||
+        stored === 'heroku'
+      ) {
+        return stored;
+      }
+    } catch {
+      // ignore
+    }
+    return 'vercel';
+  });
+  const [hasDownloadedExport, setHasDownloadedExport] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const [analyticsDays, setAnalyticsDays] = useState<number>(30);
   const [analyticsAdminToken, setAnalyticsAdminToken] = useState<string>(() => {
@@ -153,10 +238,38 @@ const Builder: React.FC<BuilderProps> = ({ onBack }) => {
   };
 
   const handleExport = () => {
-    if (!profile) return;
-    exportSite({ profile, blocks }, { siteId: activeBento?.id });
+    setHasDownloadedExport(false);
+    setExportError(null);
     setShowDeployModal(true);
   };
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('openbento_deploy_target', deployTarget);
+    } catch {
+      // ignore
+    }
+  }, [deployTarget]);
+
+  const downloadExport = useCallback(async () => {
+    if (!profile) return;
+    setIsExporting(true);
+    setExportError(null);
+
+    try {
+      await exportSite(
+        { profile, blocks },
+        { siteId: activeBento?.id, deploymentTarget: deployTarget },
+      );
+      setHasDownloadedExport(true);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Export failed.';
+      setExportError(message);
+      setHasDownloadedExport(false);
+    } finally {
+      setIsExporting(false);
+    }
+  }, [profile, blocks, activeBento?.id, deployTarget]);
 
   const fetchAnalytics = useCallback(async () => {
     if (!profile) return;
@@ -866,57 +979,121 @@ const Builder: React.FC<BuilderProps> = ({ onBack }) => {
             className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           >
              <motion.div 
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden ring-1 ring-gray-900/5"
-             >
-                <div className="p-8 pb-6 flex justify-between items-start">
-                   <div>
-                       <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-4">
-                           <Share2 size={24}/>
-                       </div>
-                       <h2 className="text-2xl font-bold text-gray-900">Ready to Deploy</h2>
-                       <p className="text-gray-500 mt-1">Your bento page has been packaged.</p>
-                   </div>
-                   <button onClick={() => setShowDeployModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors"><X size={24}/></button>
-                </div>
+	                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+	                animate={{ scale: 1, opacity: 1, y: 0 }}
+	                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+	                className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden ring-1 ring-gray-900/5"
+	             >
+	                <div className="p-8 pb-6 flex justify-between items-start">
+	                   <div>
+	                       <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-4">
+	                           <Share2 size={24}/>
+	                       </div>
+	                       <h2 className="text-2xl font-bold text-gray-900">Deploy</h2>
+	                       <p className="text-gray-500 mt-1">
+	                         Choose a deployment target, download the package, then follow <code>DEPLOY.md</code> inside.
+	                       </p>
+	                   </div>
+	                   <button onClick={() => setShowDeployModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors"><X size={24}/></button>
+	                </div>
 
-                <div className="px-8 space-y-6">
-                   <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex gap-4 items-center">
-                      <div className="bg-white p-2 rounded-full shadow-sm text-green-600 border border-gray-100"><Check size={20}/></div>
-                      <div>
-                          <p className="font-semibold text-gray-900 text-sm">Download Started</p>
-                          <p className="text-gray-500 text-xs">Check your downloads folder for <code>bento.zip</code></p>
-                      </div>
-                   </div>
+	                <div className="px-8 space-y-6 pb-2">
+	                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+	                    <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 space-y-3">
+	                      <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+	                        Deployment target
+	                      </label>
+	                      <select
+	                        value={deployTarget}
+	                        onChange={(e) => {
+	                          setDeployTarget(e.target.value as ExportDeploymentTarget);
+	                          setHasDownloadedExport(false);
+	                          setExportError(null);
+	                        }}
+	                        className="w-full bg-white border border-gray-200 rounded-xl p-3.5 focus:ring-2 focus:ring-black/5 focus:border-black focus:outline-none transition-all font-semibold text-gray-800"
+	                      >
+	                        <option value="vercel">Vercel</option>
+	                        <option value="netlify">Netlify</option>
+	                        <option value="docker">Docker (nginx)</option>
+	                        <option value="vps">VPS (nginx)</option>
+	                        <option value="heroku">Heroku</option>
+	                        <option value="github-pages">GitHub Pages</option>
+	                      </select>
+	                      <p className="text-[11px] text-gray-400">
+	                        Extra config files included:{' '}
+	                        {DEPLOY_TARGETS[deployTarget].includes.map((f) => (
+	                          <span key={f} className="font-mono mr-2">
+	                            {f}
+	                          </span>
+	                        ))}
+	                      </p>
+	                    </div>
 
-                   <div className="space-y-3">
-                      <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wider">Next Steps</h3>
-                      <div className="space-y-3">
-                        {[
-                            "Unzip the downloaded file",
-                            "Create a new public GitHub Repository",
-                            "Push the files to the 'main' branch",
-                            "Go to Repo Settings > Pages > Source: GitHub Actions"
-                        ].map((step, i) => (
-                            <div key={i} className="flex items-center gap-3 text-sm text-gray-600">
-                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold text-xs">{i + 1}</span>
-                                {step}
-                            </div>
-                        ))}
-                      </div>
-                   </div>
-                </div>
-                
-                <div className="p-8 pt-6">
-                    <button onClick={() => setShowDeployModal(false)} className="w-full py-4 bg-gray-900 text-white rounded-2xl font-bold hover:bg-black transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                        Close
-                    </button>
-                </div>
-             </motion.div>
-          </motion.div>
-      )}
+	                    <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex gap-4 items-center">
+	                      <div className="bg-white p-2 rounded-full shadow-sm border border-gray-100 text-gray-700">
+	                        {isExporting ? (
+	                          <RefreshCw size={20} className="animate-spin" />
+	                        ) : hasDownloadedExport ? (
+	                          <Check size={20} className="text-green-600" />
+	                        ) : (
+	                          <Download size={20} />
+	                        )}
+	                      </div>
+	                      <div className="min-w-0">
+	                        <p className="font-semibold text-gray-900 text-sm">
+	                          {isExporting ? 'Packaging…' : hasDownloadedExport ? 'Package downloaded' : 'Download package'}
+	                        </p>
+	                        <p className="text-gray-500 text-xs break-all">
+	                          <code>{`${profile.name.replace(/\s+/g, '-').toLowerCase()}-bento-${deployTarget}.zip`}</code>
+	                        </p>
+	                      </div>
+	                    </div>
+	                  </div>
+
+	                  {exportError && (
+	                    <div className="bg-red-50 border border-red-100 rounded-2xl p-4 text-sm text-red-700 font-semibold">
+	                      {exportError}
+	                    </div>
+	                  )}
+
+	                  <div className="space-y-3">
+	                    <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wider">
+	                      Next steps ({DEPLOY_TARGETS[deployTarget].label})
+	                    </h3>
+	                    <div className="space-y-3">
+	                      {DEPLOY_TARGETS[deployTarget].steps.map((step, i) => (
+	                        <div key={i} className="flex items-start gap-3 text-sm text-gray-600">
+	                          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold text-xs mt-0.5">
+	                            {i + 1}
+	                          </span>
+	                          <span>{step}</span>
+	                        </div>
+	                      ))}
+	                    </div>
+	                  </div>
+	                </div>
+
+	                <div className="p-8 pt-6 border-t border-gray-100">
+	                  <div className="flex flex-col sm:flex-row gap-3">
+	                    <button
+	                      onClick={downloadExport}
+	                      disabled={isExporting}
+	                      className="w-full sm:flex-1 py-4 bg-gray-900 text-white rounded-2xl font-bold hover:bg-black transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+	                    >
+	                      {isExporting ? <RefreshCw size={18} className="animate-spin" /> : <Download size={18} />}
+	                      {hasDownloadedExport ? 'Download again' : 'Download package'}
+	                    </button>
+	                    <button
+	                      onClick={() => setShowDeployModal(false)}
+	                      className="w-full sm:flex-1 py-4 bg-white text-gray-900 rounded-2xl font-bold border border-gray-200 hover:bg-gray-50 transition-all"
+	                    >
+	                      Close
+	                    </button>
+	                  </div>
+	                </div>
+	             </motion.div>
+	          </motion.div>
+	      )}
       </AnimatePresence>
 
       {/* 4. ANALYTICS MODAL */}

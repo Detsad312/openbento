@@ -963,7 +963,193 @@ const generateHtml = (data: SiteData, imageMap: Record<string, string>): string 
 </html>`;
 };
 
-export const exportSite = async (data: SiteData, opts?: { siteId?: string }) => {
+export type ExportDeploymentTarget =
+  | 'vercel'
+  | 'netlify'
+  | 'github-pages'
+  | 'docker'
+  | 'vps'
+  | 'heroku';
+
+const VERCEL_JSON = `{
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
+`;
+
+const NETLIFY_TOML = `[build]
+  publish = "."
+  command = "echo \\"no build\\""
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+`;
+
+const NGINX_CONF = `server {
+  listen 80;
+  server_name _;
+
+  root /usr/share/nginx/html;
+  index index.html;
+
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+}
+`;
+
+const DOCKERFILE_NGINX = `FROM nginx:alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY . /usr/share/nginx/html
+`;
+
+const DOCKERIGNORE = `.git
+node_modules
+dist
+`;
+
+const HEROKU_PACKAGE_JSON = (name: string) => `{
+  "name": "${name.replaceAll('"', '')}",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": { "node": "20.x" },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
+`;
+
+const HEROKU_SERVER_JS = `import http from 'node:http';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const MIME: Record<string, string> = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.txt': 'text/plain; charset=utf-8',
+};
+
+const safeJoin = (base: string, target: string) => {
+  const targetPath = path.normalize(path.join(base, target));
+  if (!targetPath.startsWith(base)) return base;
+  return targetPath;
+};
+
+const server = http.createServer(async (req, res) => {
+  try {
+    const reqUrl = new URL(req.url || '/', 'http://localhost');
+    const pathname = decodeURIComponent(reqUrl.pathname);
+
+    let filePath = pathname === '/' ? '/index.html' : pathname;
+    filePath = safeJoin(__dirname, filePath);
+
+    try {
+      const stat = await fs.stat(filePath);
+      if (stat.isDirectory()) filePath = path.join(filePath, 'index.html');
+      const ext = path.extname(filePath);
+      const data = await fs.readFile(filePath);
+      res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
+      res.end(data);
+      return;
+    } catch {
+      // Fallback to index.html (static single-page)
+      const data = await fs.readFile(path.join(__dirname, 'index.html'));
+      res.writeHead(200, { 'Content-Type': MIME['.html'] });
+      res.end(data);
+      return;
+    }
+  } catch {
+    res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Server error');
+  }
+});
+
+server.listen(process.env.PORT || 3000);
+`;
+
+const HEROKU_PROCFILE = `web: npm start
+`;
+
+const generateDeployDocs = (params: {
+  title: string;
+  deploymentTarget: ExportDeploymentTarget;
+  analyticsEnabled: boolean;
+  siteId?: string;
+  analyticsEndpoint?: string;
+}) => {
+  const { title, deploymentTarget, analyticsEnabled, siteId, analyticsEndpoint } = params;
+  return `# Deploy your Bento page
+
+This export contains a static website:
+
+- \`index.html\`
+- \`styles.css\`
+- \`app.js\`
+- \`assets/\` (optional)
+
+Selected deployment target: **${deploymentTarget}**
+
+## Analytics
+
+- Enabled: **${analyticsEnabled ? 'yes' : 'no'}**
+${analyticsEnabled ? `- Site ID: \`${siteId}\`\n- Track endpoint: \`${analyticsEndpoint}\`` : ''}
+
+## Deploy options
+
+### Vercel
+
+- Import the unzipped folder as a Vercel project (Framework: Other / No build)
+- This package includes \`vercel.json\`
+
+### Netlify
+
+- Drag & drop the unzipped folder into Netlify “Deploy manually”
+- This package includes \`netlify.toml\`
+
+### GitHub Pages (GitHub Actions)
+
+- Create a repository, push the unzipped files to \`main\`
+- In GitHub: Settings → Pages → Source: GitHub Actions
+- This package includes \`.github/workflows/deploy.yml\`
+
+### Docker (nginx)
+
+- Build: \`docker build -t my-bento .\`
+- Run: \`docker run --rm -p 8080:80 my-bento\`
+- This package includes \`Dockerfile\` + \`nginx.conf\`
+
+### VPS (nginx)
+
+- Copy files to your server (example: \`/var/www/bento\`)
+- Use the provided \`nginx.conf\` as a starting point (adjust the \`root\` path)
+
+### Heroku
+
+- This package includes \`server.js\` + \`Procfile\` + \`package.json\`
+- Deploy as a simple Node web app serving static files.
+`;
+};
+
+export const exportSite = async (
+  data: SiteData,
+  opts?: { siteId?: string; deploymentTarget?: ExportDeploymentTarget },
+) => {
   const zip = new JSZip();
   const folderAssets = zip.folder("assets");
   const imageMap: Record<string, string> = {};
@@ -1002,8 +1188,44 @@ export const exportSite = async (data: SiteData, opts?: { siteId?: string }) => 
   zip.file("index.html", generateHtml(data, imageMap));
   zip.file("data.json", JSON.stringify(data, null, 2));
 
-  zip.file(".github/workflows/deploy.yml", GITHUB_WORKFLOW_YAML);
+  const deploymentTarget: ExportDeploymentTarget = opts?.deploymentTarget ?? 'vercel';
+
+  zip.file(
+    "DEPLOY.md",
+    generateDeployDocs({
+      title: data.profile.name,
+      deploymentTarget,
+      analyticsEnabled,
+      siteId: opts?.siteId,
+      analyticsEndpoint: analytics?.endpoint,
+    }),
+  );
+
+  switch (deploymentTarget) {
+    case 'github-pages':
+      zip.file(".github/workflows/deploy.yml", GITHUB_WORKFLOW_YAML);
+      break;
+    case 'vercel':
+      zip.file("vercel.json", VERCEL_JSON);
+      break;
+    case 'netlify':
+      zip.file("netlify.toml", NETLIFY_TOML);
+      break;
+    case 'docker':
+      zip.file("Dockerfile", DOCKERFILE_NGINX);
+      zip.file("nginx.conf", NGINX_CONF);
+      zip.file(".dockerignore", DOCKERIGNORE);
+      break;
+    case 'vps':
+      zip.file("nginx.conf", NGINX_CONF.replaceAll('/usr/share/nginx/html', '/var/www/bento'));
+      break;
+    case 'heroku':
+      zip.file("Procfile", HEROKU_PROCFILE);
+      zip.file("package.json", HEROKU_PACKAGE_JSON(`${data.profile.name.replace(/\s+/g, '-').toLowerCase()}-bento`));
+      zip.file("server.js", HEROKU_SERVER_JS);
+      break;
+  }
 
   const content = await zip.generateAsync({ type: "blob" });
-  saveAs(content, `${data.profile.name.replace(/\s+/g, '-').toLowerCase()}-bento.zip`);
+  saveAs(content, `${data.profile.name.replace(/\s+/g, '-').toLowerCase()}-bento-${deploymentTarget}.zip`);
 };
