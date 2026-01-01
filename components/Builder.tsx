@@ -652,6 +652,81 @@ const Builder: React.FC<BuilderProps> = ({ onBack }) => {
     if (editingBlockId === id) setEditingBlockId(null);
   };
 
+  const duplicateBlock = useCallback(
+    (id: string) => {
+      let duplicated: BlockData | null = null;
+
+      handleSetBlocks((prev) => {
+        const source = prev.find((b) => b.id === id);
+        if (!source) return prev;
+
+        const generateId = () => {
+          if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+            return crypto.randomUUID();
+          }
+          return Math.random().toString(36).slice(2, 11);
+        };
+
+        const clone: BlockData = {
+          ...source,
+          id: generateId(),
+          gridColumn: undefined,
+          gridRow: undefined,
+          zIndex: undefined,
+          mediaPosition: source.mediaPosition ? { ...source.mediaPosition } : undefined,
+          youtubeVideos: source.youtubeVideos
+            ? source.youtubeVideos.map((vid) => ({ ...vid }))
+            : undefined,
+        };
+
+        const occupiedCells = getOccupiedCells(prev);
+        const startRow = source.gridRow ?? 1;
+        const position = findNextAvailablePosition(clone, occupiedCells, startRow);
+
+        clone.gridColumn = position.col;
+        clone.gridRow = position.row;
+
+        duplicated = clone;
+        return [...prev, clone];
+      });
+
+      if (duplicated) {
+        setEditingBlockId(duplicated.id);
+        if (!isSidebarOpen) setIsSidebarOpen(true);
+      }
+    },
+    [handleSetBlocks, isSidebarOpen]
+  );
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
+      if (!(event.metaKey || event.ctrlKey)) return;
+      if (event.key.toLowerCase() !== 'd') return;
+      if (!editingBlockId) return;
+
+      const activeElement = (document.activeElement as HTMLElement) || null;
+      const targetElement = (event.target as HTMLElement) || null;
+      const shouldSkip =
+        (activeElement &&
+          (activeElement.tagName === 'INPUT' ||
+            activeElement.tagName === 'TEXTAREA' ||
+            activeElement.isContentEditable)) ||
+        (targetElement &&
+          (targetElement.tagName === 'INPUT' ||
+            targetElement.tagName === 'TEXTAREA' ||
+            targetElement.isContentEditable));
+
+      if (shouldSkip) return;
+
+      event.preventDefault();
+      duplicateBlock(editingBlockId);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [duplicateBlock, editingBlockId]);
+
   const handleExport = () => {
     setHasDownloadedExport(false);
     setExportError(null);
@@ -1884,6 +1959,7 @@ const Builder: React.FC<BuilderProps> = ({ onBack }) => {
                               onDragEnter={handleDragEnter}
                               onDragEnd={handleDragEnd}
                               onDrop={handleDrop}
+                              onDuplicate={duplicateBlock}
                               onInlineUpdate={updateBlock}
                             />
                           ))}
