@@ -4,11 +4,11 @@ name: CI
 on:
   # Déclenché sur push vers toutes les branches
   push:
-    branches: ['*']
+    branches: ["*"]
 
   # Déclenché sur les Pull Requests vers main
   pull_request:
-    branches: ['main']
+    branches: ["main"]
 
   # Permet de lancer le workflow manuellement
   workflow_dispatch:
@@ -25,8 +25,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -43,7 +43,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_ENABLE_LANDING: 'true'
+          VITE_ENABLE_LANDING: "true"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -51,4 +51,3 @@ jobs:
           name: dist
           path: dist/
           retention-days: 7
-
