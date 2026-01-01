@@ -3,7 +3,7 @@ import { useEffect, useRef, useCallback } from 'react';
 export interface AnalyticsConfig {
   enabled?: boolean;
   supabaseUrl?: string;
-  anonKey?: string;
+  anonKey?: string; // DEPRECATED: No longer needed - Edge Function handles auth
   siteId: string;
 }
 
@@ -63,46 +63,40 @@ export const useAnalytics = (config: AnalyticsConfig | undefined) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Track event to Supabase
+  // Track event to Supabase via Edge Function (more secure - no keys exposed)
   const trackEvent = useCallback(
     async (eventType: string, extra: Partial<TrackEventPayload> = {}) => {
-      if (!config?.enabled || !config?.supabaseUrl || !config?.anonKey) return;
+      if (!config?.enabled || !config?.supabaseUrl) return;
 
       try {
         const utm = new URLSearchParams(window.location.search);
-        const payload: TrackEventPayload = {
-          site_id: config.siteId,
-          event_type: eventType,
-          visitor_id: getVisitorId(),
-          session_id: sessionIdRef.current,
-          page_url: window.location.href,
-          referrer: document.referrer || null,
-          utm_source: utm.get('utm_source') || null,
-          utm_medium: utm.get('utm_medium') || null,
-          utm_campaign: utm.get('utm_campaign') || null,
-          utm_term: utm.get('utm_term') || null,
-          utm_content: utm.get('utm_content') || null,
-          user_agent: navigator.userAgent,
+        
+        // Payload format for the Edge Function
+        const payload = {
+          siteId: config.siteId,
+          event: eventType === 'page_view' || eventType === 'click' ? eventType : 'page_view',
+          blockId: extra.block_id || undefined,
+          destinationUrl: extra.destination_url || undefined,
+          pageUrl: window.location.href,
+          referrer: document.referrer || undefined,
+          utm: {
+            source: utm.get('utm_source') || undefined,
+            medium: utm.get('utm_medium') || undefined,
+            campaign: utm.get('utm_campaign') || undefined,
+            term: utm.get('utm_term') || undefined,
+            content: utm.get('utm_content') || undefined,
+          },
           language: navigator.language,
-          screen_w: window.screen?.width || null,
-          screen_h: window.screen?.height || null,
-          viewport_w: window.innerWidth || null,
-          viewport_h: window.innerHeight || null,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
-          ...extra,
+          screenW: window.screen?.width || undefined,
+          screenH: window.screen?.height || undefined,
         };
 
-        const endpoint = `${config.supabaseUrl.replace(/\/+$/, '')}/rest/v1/openbento_analytics_events`;
-        const headers = {
-          'Content-Type': 'application/json',
-          apikey: config.anonKey,
-          Authorization: `Bearer ${config.anonKey}`,
-          Prefer: 'return=minimal',
-        };
+        // Use Edge Function endpoint (no API key needed - function handles auth)
+        const endpoint = `${config.supabaseUrl.replace(/\/+$/, '')}/functions/v1/openbento-analytics-track`;
 
         fetch(endpoint, {
           method: 'POST',
-          headers,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
           keepalive: true,
         }).catch(() => {});

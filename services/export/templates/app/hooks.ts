@@ -44,7 +44,7 @@ const useTiltEffect = (isEnabled = true) => {
 `;
 
 export const generateAnalyticsHook = (siteId: string): string => `
-// Analytics hook
+// Analytics hook (uses Edge Function - no API keys exposed)
 const useAnalytics = () => {
   const sessionStart = useRef(Date.now())
   const maxScroll = useRef(0)
@@ -62,44 +62,33 @@ const useAnalytics = () => {
 
   useEffect(() => {
     const config = profile.analytics
-    if (!config?.enabled || !config?.supabaseUrl || !config?.anonKey) return
+    if (!config?.enabled || !config?.supabaseUrl) return
 
-    const getVisitorId = () => {
-      let id = localStorage.getItem('_ob_vid')
-      if (!id) {
-        id = 'v_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36)
-        localStorage.setItem('_ob_vid', id)
-      }
-      return id
-    }
-
-    const track = async (eventType: string, extra = {}) => {
+    const track = async (eventType: 'page_view' | 'click', extra: { blockId?: string; destinationUrl?: string } = {}) => {
       const utm = new URLSearchParams(window.location.search)
       const payload = {
-        site_id: '${siteId}',
-        event_type: eventType,
-        visitor_id: getVisitorId(),
-        session_id: sessionStart.current.toString(36),
-        page_url: window.location.href,
-        referrer: document.referrer || null,
-        utm_source: utm.get('utm_source'),
-        utm_medium: utm.get('utm_medium'),
-        utm_campaign: utm.get('utm_campaign'),
-        utm_term: utm.get('utm_term'),
-        utm_content: utm.get('utm_content'),
-        user_agent: navigator.userAgent,
+        siteId: '${siteId}',
+        event: eventType,
+        blockId: extra.blockId,
+        destinationUrl: extra.destinationUrl,
+        pageUrl: window.location.href,
+        referrer: document.referrer || undefined,
+        utm: {
+          source: utm.get('utm_source') || undefined,
+          medium: utm.get('utm_medium') || undefined,
+          campaign: utm.get('utm_campaign') || undefined,
+          term: utm.get('utm_term') || undefined,
+          content: utm.get('utm_content') || undefined,
+        },
         language: navigator.language,
-        screen_w: window.screen?.width,
-        screen_h: window.screen?.height,
-        viewport_w: window.innerWidth,
-        viewport_h: window.innerHeight,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        ...extra,
+        screenW: window.screen?.width,
+        screenH: window.screen?.height,
       }
-      const endpoint = config.supabaseUrl.replace(/\\/+$/, '') + '/rest/v1/openbento_analytics_events'
+      // Use Edge Function endpoint (secure - no API keys needed)
+      const endpoint = config.supabaseUrl.replace(/\\/+$/, '') + '/functions/v1/openbento-analytics-track'
       fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': config.anonKey!, 'Authorization': 'Bearer ' + config.anonKey, 'Prefer': 'return=minimal' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
         keepalive: true,
       }).catch(() => {})
@@ -107,12 +96,8 @@ const useAnalytics = () => {
 
     track('page_view')
 
-    const trackEnd = () => {
-      const duration = Math.round((Date.now() - sessionStart.current) / 1000)
-      track('session_end', { duration_seconds: duration, scroll_depth: maxScroll.current, engaged: duration > 10 && maxScroll.current > 25 })
-    }
-    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') trackEnd() })
-    window.addEventListener('pagehide', trackEnd)
+    // Note: session_end is not supported by the Edge Function, only page_view and click
+    // If you need session tracking, extend the Edge Function
   }, [])
 }
 `;

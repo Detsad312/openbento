@@ -104,7 +104,7 @@ export interface UserProfile {
   analytics?: {
     enabled?: boolean;
     supabaseUrl?: string; // https://<project-ref>.supabase.co
-    anonKey?: string; // Supabase anon/public key
+    anonKey?: string; // DEPRECATED: No longer needed - Edge Function handles auth securely
   };
   // Centralized social accounts configuration
   socialAccounts?: SocialAccount[];

@@ -16,7 +16,7 @@ import {
   generateBackgroundBlur,
 } from './layouts';
 
-export const generateAppTsx = (data: SiteData, imageMap: ImageMap): string => {
+export const generateAppTsx = (data: SiteData, imageMap: ImageMap, siteId?: string): string => {
   const { profile, blocks } = data;
   const avatarSrc = imageMap['profile_avatar'] || profile.avatarUrl;
 
@@ -67,8 +67,8 @@ export const generateAppTsx = (data: SiteData, imageMap: ImageMap): string => {
     backgroundImage: profile.backgroundImage,
   };
 
-  // Site ID for analytics
-  const siteId = data.profile.analytics?.enabled ? 'SITE_ID' : '';
+  // Site ID for analytics (use provided siteId or fallback)
+  const analyticsId = data.profile.analytics?.enabled ? (siteId || 'default') : '';
 
   // Assemble the complete App.tsx
   return `${generateImports()}
@@ -80,7 +80,7 @@ ${generateBlockComponent()}
 // Profile data
 const profile = ${profileJson}
 const blocks: BlockData[] = ${blocksJson}
-${generateAnalyticsHook(siteId)}
+${generateAnalyticsHook(analyticsId)}
 
 // Sort blocks for mobile
 const sortedBlocks = [...blocks].sort((a, b) => {

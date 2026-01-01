@@ -68,7 +68,7 @@ export const exportSite = async (
   // Source files
   srcFolder?.file('main.tsx', generateMainTsx());
   srcFolder?.file('index.css', generateIndexCSS());
-  srcFolder?.file('App.tsx', generateAppTsx(data, imageMap));
+  srcFolder?.file('App.tsx', generateAppTsx(data, imageMap, opts?.siteId));
 
   // Deployment-specific configuration files
   switch (deploymentTarget) {

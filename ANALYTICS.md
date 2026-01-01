@@ -7,8 +7,14 @@ OpenBento can track:
 
 This is done via two Supabase Edge Functions:
 
-- `openbento-analytics-track` (public write endpoint)
+- `openbento-analytics-track` (public write endpoint - handles auth securely server-side)
 - `openbento-analytics-admin` (admin read endpoint, protected by a token)
+
+## 🔐 Security
+
+**No API keys are exposed in the exported code!**
+
+The analytics system uses Supabase Edge Functions which handle authentication server-side with the `SERVICE_ROLE_KEY`. The client only needs the Supabase project URL - no `anonKey` is required or exposed.
 
 ## 1) Provision Supabase
 
@@ -44,7 +50,9 @@ In the Builder sidebar:
 2. Toggle **Enable analytics**
 3. Paste your **Supabase Project URL** (example: `https://xxxx.supabase.co`)
 
-When you export, the generated page will automatically send `page_view` and `click` events.
+> **Note:** The `anonKey` field is deprecated and no longer required. Only the project URL is needed.
+
+When you export, the generated page will automatically send `page_view` and `click` events via the Edge Function.
 
 ## 4) View analytics (admin)
 
