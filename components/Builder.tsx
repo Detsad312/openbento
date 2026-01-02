@@ -1,17 +1,16 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { SiteData, UserProfile, BlockData, BlockType, SavedBento, AvatarStyle } from '../types';
+import { UserProfile, BlockData, BlockType, SavedBento, AvatarStyle } from '../types';
 import Block from './Block';
 import EditorSidebar from './EditorSidebar';
 import ProfileDropdown from './ProfileDropdown';
 import SettingsModal from './SettingsModal';
 import ImageCropModal from './ImageCropModal';
 import AvatarStyleModal from './AvatarStyleModal';
-import { exportSite, type ExportDeploymentTarget } from '../services/export';
+import { exportSite, type ExportDeploymentTarget } from '@/services/export';
 import {
   initializeApp,
   updateBentoData,
   setActiveBentoId,
-  getBento,
   downloadBentoJSON,
   loadBentoFromFile,
   renameBento,

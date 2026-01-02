@@ -1,14 +1,20 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { BlockData, BlockType } from '../types';
-import { Youtube, MoveVertical, Play, Loader2, Pencil, Move, Check, X, Trash2, CopyPlus, } from 'lucide-react';
+import {
+  Youtube,
+  MoveVertical,
+  Play,
+  Loader2,
+  Pencil,
+  Move,
+  Check,
+  X,
+  Trash2,
+  CopyPlus,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getSocialPlatformOption, inferSocialPlatformFromUrl } from '../socialPlatforms';
-import {
-  openSafeUrl,
-  isValidYouTubeChannelId,
-  isValidLocationString,
-  sanitizeUrl,
-} from '../utils/security';
+import { openSafeUrl, isValidYouTubeChannelId, isValidLocationString } from '../utils/security';
 
 // Apple TV style 3D tilt effect hook
 const useTiltEffect = (isEnabled: boolean = true) => {
@@ -628,23 +634,12 @@ const Block: React.FC<BlockProps> = ({
   // ===== YOUTUBE GRID/LIST LAYOUT (ADAPTIVE) =====
   if (isYoutubeGrid || isYoutubeList) {
     // Adaptive layout based on block size
-    const isLargeBlock = block.colSpan >= 2 && block.rowSpan >= 2; // 2x2 or larger
     const isWideBlock = block.colSpan >= 2 && block.rowSpan === 1; // 2x1
-    const isTallBlock = block.colSpan === 1 && block.rowSpan >= 2; // 1x2
     const isSmallBlock = block.colSpan === 1 && block.rowSpan === 1; // 1x1
 
     // Determine display mode based on size
-    const showTitles = isLargeBlock || isTallBlock;
     const videosToShow = isSmallBlock ? 2 : isWideBlock ? 2 : 4;
     const displayVideos = activeVideos.slice(0, videosToShow);
-
-    // Grid configuration
-    const getGridClass = () => {
-      if (isSmallBlock) return 'grid grid-cols-2 gap-1.5';
-      if (isWideBlock) return 'grid grid-cols-2 gap-2';
-      if (isTallBlock) return 'flex flex-col gap-2';
-      return 'grid grid-cols-2 gap-2'; // Large block
-    };
 
     return (
       <motion.div
