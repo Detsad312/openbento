@@ -6,7 +6,8 @@ import ProfileDropdown from './ProfileDropdown';
 import SettingsModal from './SettingsModal';
 import ImageCropModal from './ImageCropModal';
 import AvatarStyleModal from './AvatarStyleModal';
-import { exportSite, type ExportDeploymentTarget } from '@/services/export';
+import AIGeneratorModal from './AIGeneratorModal';
+import { exportSite, type ExportDeploymentTarget } from '../services/export';
 import {
   initializeApp,
   updateBentoData,
@@ -39,6 +40,7 @@ import {
   Camera,
   Pencil,
   Palette,
+  Sparkles,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -370,6 +372,7 @@ const Builder: React.FC<BuilderProps> = ({ onBack }) => {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showAvatarCropModal, setShowAvatarCropModal] = useState(false);
   const [showAvatarStyleModal, setShowAvatarStyleModal] = useState(false);
+  const [showAIGeneratorModal, setShowAIGeneratorModal] = useState(false);
   const [pendingAvatarSrc, setPendingAvatarSrc] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [isLoading, setIsLoading] = useState(true);
@@ -1418,6 +1421,16 @@ const Builder: React.FC<BuilderProps> = ({ onBack }) => {
                 </a>
               )}
 
+              {/* AI Generator */}
+              <button
+                onClick={() => setShowAIGeneratorModal(true)}
+                className="bg-gradient-to-r from-violet-500 to-purple-600 text-white px-3.5 py-2 rounded-lg shadow-sm hover:from-violet-600 hover:to-purple-700 transition-all text-xs font-semibold flex items-center gap-2"
+                title="Generate with AI"
+              >
+                <Sparkles size={16} />
+                <span className="hidden sm:inline">AI</span>
+              </button>
+
               {/* JSON Import/Export */}
               <div className="flex items-center gap-1 border-r border-gray-200 pr-3 mr-1">
                 <button
@@ -2144,7 +2157,20 @@ const Builder: React.FC<BuilderProps> = ({ onBack }) => {
         onStyleChange={handleAvatarStyleChange}
       />
 
-      {/* 6. DEPLOY MODAL */}
+      {/* 6. AI GENERATOR MODAL */}
+      <AIGeneratorModal
+        isOpen={showAIGeneratorModal}
+        onClose={() => setShowAIGeneratorModal(false)}
+        onBentoImported={(newBento) => {
+          // Reload the app with the new bento
+          setActiveBento(newBento);
+          setProfile(newBento.data.profile);
+          setBlocks(newBento.data.blocks);
+          setGridVersion(newBento.data.gridVersion ?? GRID_VERSION);
+        }}
+      />
+
+      {/* 7. DEPLOY MODAL */}
       <AnimatePresence>
         {showDeployModal && (
           <motion.div
