@@ -71,7 +71,10 @@ const DocsSidebar: React.FC<DocsSidebarProps> = ({
                   }
                 `}
               >
-                <Home size={16} className={currentSlug === 'index' ? 'text-white' : 'text-gray-400'} />
+                <Home
+                  size={16}
+                  className={currentSlug === 'index' ? 'text-white' : 'text-gray-400'}
+                />
                 {indexDoc.title}
               </button>
             </div>

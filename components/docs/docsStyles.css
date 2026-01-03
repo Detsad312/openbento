@@ -165,16 +165,18 @@
   height: auto;
   border-radius: 0.75rem;
   margin: 1.5rem 0;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 /* Task Lists (GFM) */
-.docs-content input[type="checkbox"] {
+.docs-content input[type='checkbox'] {
   margin-right: 0.5rem;
   accent-color: #2563eb;
 }
 
-.docs-content li:has(input[type="checkbox"]) {
+.docs-content li:has(input[type='checkbox']) {
   list-style: none;
   margin-left: -1.5rem;
 }
@@ -277,7 +279,7 @@
   .docs-content h1 {
     font-size: 1.875rem;
   }
-  
+
   .docs-content h2 {
     font-size: 1.375rem;
   }
@@ -289,4 +291,3 @@
     padding: 0.875rem 1rem;
   }
 }
-
