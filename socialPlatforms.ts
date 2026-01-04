@@ -439,34 +439,52 @@ export const getSocialPlatformOption = (
   return SOCIAL_PLATFORM_OPTIONS.find((p) => p.id === platform);
 };
 
+// SECURITY: Check if hostname matches a domain (exact match or subdomain)
+const hostMatches = (hostname: string, domain: string): boolean => {
+  return hostname === domain || hostname.endsWith(`.${domain}`);
+};
+
 export const inferSocialPlatformFromUrl = (url: string | undefined): SocialPlatform | undefined => {
   if (!url) return undefined;
-  const value = url.toLowerCase();
-  if (value.includes('x.com/') || value.includes('twitter.com/')) return 'x';
-  if (value.includes('instagram.com/')) return 'instagram';
-  if (value.includes('tiktok.com/')) return 'tiktok';
-  if (value.includes('youtube.com/') || value.includes('youtu.be/')) return 'youtube';
-  if (value.includes('github.com/')) return 'github';
-  if (value.includes('gitlab.com/')) return 'gitlab';
-  if (value.includes('linkedin.com/')) return 'linkedin';
-  if (value.includes('facebook.com/')) return 'facebook';
-  if (value.includes('twitch.tv/')) return 'twitch';
-  if (value.includes('dribbble.com/')) return 'dribbble';
-  if (value.includes('medium.com/')) return 'medium';
-  if (value.includes('dev.to/')) return 'devto';
-  if (value.includes('reddit.com/')) return 'reddit';
-  if (value.includes('pinterest.com/')) return 'pinterest';
-  if (value.includes('threads.net/')) return 'threads';
-  if (value.includes('bsky.app/')) return 'bluesky';
-  if (value.includes('substack.com') || /\.substack\.com/.test(value)) return 'substack';
-  if (value.includes('patreon.com/')) return 'patreon';
-  if (value.includes('ko-fi.com/')) return 'kofi';
-  if (value.includes('buymeacoffee.com/')) return 'buymeacoffee';
-  if (value.includes('snapchat.com/')) return 'snapchat';
-  if (value.includes('discord.gg/') || value.includes('discord.com/')) return 'discord';
-  if (value.includes('t.me/') || value.includes('telegram.')) return 'telegram';
-  if (value.includes('wa.me/') || value.includes('whatsapp.com/')) return 'whatsapp';
-  if (value.includes('open.spotify.com/') || value.includes('spotify.com/')) return 'spotify';
+
+  // SECURITY: Parse URL properly to extract hostname instead of substring matching
+  // This prevents attacks like https://evil.com/fake/spotify.com/ bypassing checks
+  let hostname: string;
+  try {
+    const normalizedUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    const parsed = new URL(normalizedUrl);
+    if (!['http:', 'https:'].includes(parsed.protocol)) return undefined;
+    hostname = parsed.hostname.toLowerCase();
+  } catch {
+    return undefined;
+  }
+
+  // Check hostname against known platforms
+  if (hostMatches(hostname, 'x.com') || hostMatches(hostname, 'twitter.com')) return 'x';
+  if (hostMatches(hostname, 'instagram.com')) return 'instagram';
+  if (hostMatches(hostname, 'tiktok.com')) return 'tiktok';
+  if (hostMatches(hostname, 'youtube.com') || hostMatches(hostname, 'youtu.be')) return 'youtube';
+  if (hostMatches(hostname, 'github.com')) return 'github';
+  if (hostMatches(hostname, 'gitlab.com')) return 'gitlab';
+  if (hostMatches(hostname, 'linkedin.com')) return 'linkedin';
+  if (hostMatches(hostname, 'facebook.com')) return 'facebook';
+  if (hostMatches(hostname, 'twitch.tv')) return 'twitch';
+  if (hostMatches(hostname, 'dribbble.com')) return 'dribbble';
+  if (hostMatches(hostname, 'medium.com')) return 'medium';
+  if (hostMatches(hostname, 'dev.to')) return 'devto';
+  if (hostMatches(hostname, 'reddit.com')) return 'reddit';
+  if (hostMatches(hostname, 'pinterest.com')) return 'pinterest';
+  if (hostMatches(hostname, 'threads.net')) return 'threads';
+  if (hostMatches(hostname, 'bsky.app')) return 'bluesky';
+  if (hostMatches(hostname, 'substack.com')) return 'substack';
+  if (hostMatches(hostname, 'patreon.com')) return 'patreon';
+  if (hostMatches(hostname, 'ko-fi.com')) return 'kofi';
+  if (hostMatches(hostname, 'buymeacoffee.com')) return 'buymeacoffee';
+  if (hostMatches(hostname, 'snapchat.com')) return 'snapchat';
+  if (hostMatches(hostname, 'discord.gg') || hostMatches(hostname, 'discord.com')) return 'discord';
+  if (hostMatches(hostname, 't.me') || hostMatches(hostname, 'telegram.org')) return 'telegram';
+  if (hostMatches(hostname, 'wa.me') || hostMatches(hostname, 'whatsapp.com')) return 'whatsapp';
+  if (hostMatches(hostname, 'spotify.com')) return 'spotify';
   return undefined;
 };
 
