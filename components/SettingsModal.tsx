@@ -15,7 +15,7 @@ import {
   Loader2,
   Database,
 } from 'lucide-react';
-import type { SocialAccount, SocialPlatform, UserProfile, BlockData } from '../types';
+import type { SocialPlatform, UserProfile, BlockData } from '../types';
 import { AVATAR_PLACEHOLDER } from '../constants';
 import ImageCropModal from './ImageCropModal';
 import {

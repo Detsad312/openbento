@@ -314,7 +314,7 @@ const simpleSupabaseSetupPlugin = (): Plugin => {
 
             try {
               logs.push('Connecting to database...');
-              const { stdout, stderr } = await execFileAsync(
+              const { stdout, stderr: _stderr } = await execFileAsync(
                 'psql',
                 [
                   '-h',

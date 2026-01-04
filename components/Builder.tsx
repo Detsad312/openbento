@@ -588,7 +588,7 @@ const Builder: React.FC<BuilderProps> = ({ onBack }) => {
       try {
         const { col, row } = JSON.parse(pendingPosition);
         gridPosition = { col, row };
-      } catch (e) {
+      } catch {
         // ignore
       }
       sessionStorage.removeItem('pendingBlockPosition');
@@ -807,7 +807,7 @@ const Builder: React.FC<BuilderProps> = ({ onBack }) => {
 
   // Get avatar style classes
   const getAvatarClasses = (style?: AvatarStyle) => {
-    const s = style || { shape: 'rounded', shadow: true, border: true };
+    const _s = style || { shape: 'rounded', shadow: true, border: true };
     const classes: string[] = [
       'w-full',
       'h-full',
@@ -2201,8 +2201,8 @@ const Builder: React.FC<BuilderProps> = ({ onBack }) => {
         onBentoImported={(newBento) => {
           // Reload the app with the new bento
           setActiveBento(newBento);
-          setProfile(newBento.data.profile);
-          setBlocks(newBento.data.blocks);
+          handleSetProfile(newBento.data.profile);
+          handleSetBlocks(newBento.data.blocks);
           setGridVersion(newBento.data.gridVersion ?? GRID_VERSION);
         }}
       />

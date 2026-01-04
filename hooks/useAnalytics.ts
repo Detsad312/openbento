@@ -35,7 +35,7 @@ interface TrackEventPayload {
 }
 
 // Generate unique visitor ID (persisted in localStorage)
-const getVisitorId = (): string => {
+const _getVisitorId = (): string => {
   if (typeof window === 'undefined') return '';
   let id = localStorage.getItem('_ob_vid');
   if (!id) {
@@ -48,7 +48,7 @@ const getVisitorId = (): string => {
 export const useAnalytics = (config: AnalyticsConfig | undefined) => {
   const sessionStartRef = useRef<number>(Date.now());
   const maxScrollRef = useRef<number>(0);
-  const sessionIdRef = useRef<string>(sessionStartRef.current.toString(36));
+  const _sessionIdRef = useRef<string>(sessionStartRef.current.toString(36));
 
   // Track scroll depth
   useEffect(() => {
@@ -100,7 +100,7 @@ export const useAnalytics = (config: AnalyticsConfig | undefined) => {
           body: JSON.stringify(payload),
           keepalive: true,
         }).catch(() => {});
-      } catch (_) {
+      } catch {
         // Silently fail
       }
     },

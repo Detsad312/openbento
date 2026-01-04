@@ -177,7 +177,7 @@ export const deleteBento = (id: string): void => {
 export const getActiveBentoId = (): string | null => {
   try {
     return localStorage.getItem(ACTIVE_BENTO_KEY);
-  } catch (e) {
+  } catch {
     return null;
   }
 };
@@ -346,7 +346,7 @@ export const loadBentoFromFile = (file: File): Promise<SavedBento> => {
         const json = JSON.parse(e.target?.result as string) as BentoJSON;
         const bento = importBentoFromJSON(json);
         resolve(bento);
-      } catch (err) {
+      } catch {
         reject(new Error('Invalid JSON file'));
       }
     };

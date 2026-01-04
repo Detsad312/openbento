@@ -6,7 +6,6 @@ import {
   Link,
   MapPin,
   Image as ImageIcon,
-  Type,
   Github,
   Upload,
   Trash2,

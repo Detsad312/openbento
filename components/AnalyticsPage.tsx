@@ -11,15 +11,11 @@ import {
   Monitor,
   Smartphone,
   Tablet,
-  ExternalLink,
   RefreshCw,
   Calendar,
-  ChevronDown,
   Eye,
   Target,
   Zap,
-  ArrowUpRight,
-  ArrowDownRight,
 } from 'lucide-react';
 
 type AnalyticsEvent = {
