@@ -12,6 +12,7 @@ import { generateBlockComponent } from './blockComponent';
 import {
   generateDesktopLayout,
   generateMobileLayout,
+  generateMobileLayoutHelper,
   generateFooter,
   generateBackgroundBlur,
 } from './layouts';
@@ -81,7 +82,7 @@ ${generateBlockComponent()}
 const profile = ${profileJson}
 const blocks: BlockData[] = ${blocksJson}
 ${generateAnalyticsHook(analyticsId)}
-
+${generateMobileLayoutHelper()}
 // Sort blocks for mobile
 const sortedBlocks = [...blocks].sort((a, b) => {
   const aRow = a.gridRow ?? 999

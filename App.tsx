@@ -2,6 +2,7 @@ import React, { useState, Suspense } from 'react';
 import PreviewPage from './components/PreviewPage';
 import AnalyticsPage from './components/AnalyticsPage';
 import LandingPage from './components/LandingPage';
+import DocsPage from './components/docs/DocsPage';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ENABLE_LANDING = import.meta.env.VITE_ENABLE_LANDING === 'true';
@@ -79,6 +80,10 @@ function App() {
 
   if (route === '/analytics') {
     return <AnalyticsPage />;
+  }
+
+  if (route.startsWith('/doc')) {
+    return <DocsPage />;
   }
 
   return <MainApp />;

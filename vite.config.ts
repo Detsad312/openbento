@@ -6,6 +6,9 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
+import mdx from '@mdx-js/rollup';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
 
 const execFileAsync = promisify(execFile);
 
@@ -311,7 +314,7 @@ const simpleSupabaseSetupPlugin = (): Plugin => {
 
             try {
               logs.push('Connecting to database...');
-              const { stdout, stderr } = await execFileAsync(
+              const { stdout, stderr: _stderr } = await execFileAsync(
                 'psql',
                 [
                   '-h',
@@ -743,7 +746,16 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: '0.0.0.0',
     },
-    plugins: [react(), simpleSupabaseSetupPlugin(), openbentoSupabaseDevPlugin()],
+    plugins: [
+      // MDX plugin must come before React plugin
+      mdx({
+        remarkPlugins: [remarkGfm],
+        rehypePlugins: [rehypeHighlight],
+      }),
+      react(),
+      simpleSupabaseSetupPlugin(),
+      openbentoSupabaseDevPlugin(),
+    ],
     define: {
       'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),

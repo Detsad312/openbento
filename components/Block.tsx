@@ -1,14 +1,20 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { BlockData, BlockType } from '../types';
-import { Youtube, MoveVertical, Play, Loader2, Pencil, Move, Check, X, Trash2 } from 'lucide-react';
+import {
+  Youtube,
+  MoveVertical,
+  Play,
+  Loader2,
+  Pencil,
+  Move,
+  Check,
+  X,
+  Trash2,
+  CopyPlus,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getSocialPlatformOption, inferSocialPlatformFromUrl } from '../socialPlatforms';
-import {
-  openSafeUrl,
-  isValidYouTubeChannelId,
-  isValidLocationString,
-  sanitizeUrl,
-} from '../utils/security';
+import { openSafeUrl, isValidYouTubeChannelId, isValidLocationString } from '../utils/security';
 
 // Apple TV style 3D tilt effect hook
 const useTiltEffect = (isEnabled: boolean = true) => {
@@ -78,6 +84,7 @@ interface BlockProps {
   onDragEnter: (id: string) => void;
   onDragEnd: () => void;
   onDrop: (id: string) => void;
+  onDuplicate?: (id: string) => void;
   enableResize?: boolean;
   isResizing?: boolean;
   onResizeStart?: (block: BlockData, e: React.PointerEvent<HTMLButtonElement>) => void;
@@ -97,6 +104,7 @@ const Block: React.FC<BlockProps> = ({
   onDragEnter,
   onDragEnd,
   onDrop,
+  onDuplicate,
   enableResize,
   isResizing,
   onResizeStart,
@@ -402,6 +410,9 @@ const Block: React.FC<BlockProps> = ({
       </button>
     ) : null;
 
+  const showActionButtons = !previewMode && (!!onDuplicate || !!onDelete);
+  const repositionButtonOffsetClass = showActionButtons ? 'top-12' : 'top-2';
+
   // Explicit grid positioning (if defined)
   const gridPositionStyle: React.CSSProperties = {};
   if (block.gridColumn !== undefined) {
@@ -571,21 +582,38 @@ const Block: React.FC<BlockProps> = ({
           </span>
         ) : null}
 
-        {/* Delete button - appears on hover (not in preview mode) */}
-        {!previewMode && (
-          <button
-            type="button"
-            aria-label={`Delete ${block.title ?? 'block'}`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onDelete(block.id);
-            }}
-            className="absolute top-1 left-1 p-1 bg-red-500/80 hover:bg-red-600 text-white rounded-md opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity z-20 focus:ring-2 focus:ring-offset-2 focus:ring-red-400 focus:outline-none"
-            title="Delete"
-          >
-            <Trash2 size={12} />
-          </button>
+        {/* Action buttons */}
+        {showActionButtons && (
+          <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity z-20">
+            {onDuplicate && (
+              <button
+                type="button"
+                aria-label={`Duplicate ${block.title ?? 'block'}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDuplicate(block.id);
+                }}
+                className="p-1 bg-white/90 text-gray-800 rounded-md shadow-sm hover:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
+                title="Duplicate block"
+              >
+                <CopyPlus size={12} />
+              </button>
+            )}
+            <button
+              type="button"
+              aria-label={`Delete ${block.title ?? 'block'}`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onDelete(block.id);
+              }}
+              className="p-1 bg-red-500/80 hover:bg-red-600 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
+              title="Delete block"
+            >
+              <Trash2 size={12} />
+            </button>
+          </div>
         )}
 
         {resizeHandle}
@@ -631,23 +659,12 @@ const Block: React.FC<BlockProps> = ({
   // ===== YOUTUBE GRID/LIST LAYOUT (ADAPTIVE) =====
   if (isYoutubeGrid || isYoutubeList) {
     // Adaptive layout based on block size
-    const isLargeBlock = block.colSpan >= 2 && block.rowSpan >= 2; // 2x2 or larger
     const isWideBlock = block.colSpan >= 2 && block.rowSpan === 1; // 2x1
-    const isTallBlock = block.colSpan === 1 && block.rowSpan >= 2; // 1x2
     const isSmallBlock = block.colSpan === 1 && block.rowSpan === 1; // 1x1
 
     // Determine display mode based on size
-    const showTitles = isLargeBlock || isTallBlock;
     const videosToShow = isSmallBlock ? 2 : isWideBlock ? 2 : 4;
     const displayVideos = activeVideos.slice(0, videosToShow);
-
-    // Grid configuration
-    const getGridClass = () => {
-      if (isSmallBlock) return 'grid grid-cols-2 gap-1.5';
-      if (isWideBlock) return 'grid grid-cols-2 gap-2';
-      if (isTallBlock) return 'flex flex-col gap-2';
-      return 'grid grid-cols-2 gap-2'; // Large block
-    };
 
     return (
       <motion.div
@@ -868,21 +885,38 @@ const Block: React.FC<BlockProps> = ({
             }}
           />
         )}
-        {/* Delete button - appears on hover (not in preview mode) */}
-        {!previewMode && (
-          <button
-            type="button"
-            aria-label={`Delete ${block.title ?? 'block'}`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onDelete(block.id);
-            }}
-            className="absolute top-2 left-2 p-1.5 bg-red-500/80 hover:bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity z-20 backdrop-blur-sm focus:ring-2 focus:ring-offset-2 focus:ring-red-400 focus:outline-none"
-            title="Delete block"
-          >
-            <Trash2 size={14} />
-          </button>
+        {/* Action buttons */}
+        {showActionButtons && (
+          <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity z-30 pointer-events-auto">
+            {onDuplicate && (
+              <button
+                type="button"
+                aria-label={`Duplicate ${block.title ?? 'block'}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDuplicate(block.id);
+                }}
+                className="p-2 bg-white/80 hover:bg-white text-gray-800 rounded-lg shadow-sm backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
+                title="Duplicate block"
+              >
+                <CopyPlus size={14} />
+              </button>
+            )}
+            <button
+              type="button"
+              aria-label={`Delete ${block.title ?? 'block'}`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onDelete(block.id);
+              }}
+              className="p-2 bg-red-500/80 hover:bg-red-600 text-white rounded-lg backdrop-blur-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
+              title="Delete block"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
         )}
 
         {resizeHandle}
@@ -907,7 +941,7 @@ const Block: React.FC<BlockProps> = ({
                   e.stopPropagation();
                   setIsRepositioning(true);
                 }}
-                className="absolute top-2 right-2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-lg opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity z-20 backdrop-blur-sm focus:ring-2 focus:ring-offset-2 focus:ring-white focus:outline-none"
+                className={`absolute ${repositionButtonOffsetClass} right-2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-lg opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity z-20 backdrop-blur-sm focus:ring-2 focus:ring-offset-2 focus:ring-white focus:outline-none`}
                 title="Reposition image"
               >
                 <Move size={16} />
@@ -999,7 +1033,7 @@ const Block: React.FC<BlockProps> = ({
                     e.stopPropagation();
                     setIsRepositioning(true);
                   }}
-                  className="absolute top-2 right-2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-lg opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity pointer-events-auto z-20 backdrop-blur-sm focus:ring-2 focus:ring-offset-2 focus:ring-white focus:outline-none"
+                  className={`absolute ${repositionButtonOffsetClass} right-2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-lg opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity pointer-events-auto z-20 backdrop-blur-sm focus:ring-2 focus:ring-offset-2 focus:ring-white focus:outline-none`}
                   title="Reposition media"
                 >
                   <Move size={16} />

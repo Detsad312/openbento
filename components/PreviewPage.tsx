@@ -3,6 +3,7 @@ import type { AvatarStyle, SavedBento } from '../types';
 import { getBento, getOrCreateActiveBento, setActiveBentoId } from '../services/storageService';
 import Block from './Block';
 import { buildSocialUrl, formatFollowerCount, getSocialPlatformOption } from '../socialPlatforms';
+import { getMobileLayout, MOBILE_GRID_CONFIG } from '../utils/mobileLayout';
 
 const PreviewPage: React.FC = () => {
   const [bento, setBento] = useState<SavedBento | null>(null);
@@ -233,33 +234,46 @@ const PreviewPage: React.FC = () => {
             )}
           </div>
 
-          {/* Single Column Grid */}
+          {/* Mobile Grid - 2 columns adaptive */}
           <div className="p-4">
             <div
-              className="grid gap-5 pb-8"
-              style={{ gridTemplateColumns: '1fr', gridAutoRows: '64px' }}
+              className="grid pb-8"
+              style={{
+                gridTemplateColumns: `repeat(${MOBILE_GRID_CONFIG.columns}, 1fr)`,
+                gridAutoRows: `${MOBILE_GRID_CONFIG.rowHeight}px`,
+                gap: `${MOBILE_GRID_CONFIG.gap}px`,
+              }}
             >
-              {sortedBlocks.map((block) => (
-                <div key={block.id} style={{ gridRow: `span ${block.rowSpan}` }}>
-                  <Block
-                    block={{ ...block, gridColumn: undefined, gridRow: undefined }}
-                    isSelected={false}
-                    isDragTarget={false}
-                    isDragging={false}
-                    enableResize={false}
-                    isResizing={false}
-                    onResizeStart={undefined}
-                    onEdit={() => {}}
-                    onDelete={() => {}}
-                    onDragStart={() => {}}
-                    onDragEnter={() => {}}
-                    onDragEnd={() => {}}
-                    onDrop={() => {}}
-                    enableTiltEffect={true}
-                    previewMode={true}
-                  />
-                </div>
-              ))}
+              {sortedBlocks.map((block) => {
+                const mobileLayout = getMobileLayout(block);
+                return (
+                  <div
+                    key={block.id}
+                    style={{
+                      gridColumn: `span ${mobileLayout.colSpan}`,
+                      gridRow: `span ${mobileLayout.rowSpan}`,
+                    }}
+                  >
+                    <Block
+                      block={{ ...block, gridColumn: undefined, gridRow: undefined }}
+                      isSelected={false}
+                      isDragTarget={false}
+                      isDragging={false}
+                      enableResize={false}
+                      isResizing={false}
+                      onResizeStart={undefined}
+                      onEdit={() => {}}
+                      onDelete={() => {}}
+                      onDragStart={() => {}}
+                      onDragEnter={() => {}}
+                      onDragEnd={() => {}}
+                      onDrop={() => {}}
+                      enableTiltEffect={true}
+                      previewMode={true}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

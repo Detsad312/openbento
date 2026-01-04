@@ -50,8 +50,23 @@ export const generateDesktopLayout = (params: LayoutParams): string => `
           </div>
         </div>`;
 
+// Mobile grid configuration constants
+export const MOBILE_GRID_CONFIG = {
+  columns: 2,
+  rowHeight: 80,
+  gap: 12,
+} as const;
+
+export const generateMobileLayoutHelper = (): string => `
+// Mobile layout helper - calculates responsive grid spans
+const getMobileLayout = (block: BlockData) => ({
+  colSpan: block.colSpan >= 5 ? 2 : 1,
+  rowSpan: block.colSpan >= 3 && block.colSpan < 5 ? Math.max(block.rowSpan, 2) : block.rowSpan
+})
+`;
+
 export const generateMobileLayout = (params: LayoutParams): string => `
-        {/* Mobile Layout */}
+        {/* Mobile Layout - 2 columns adaptive */}
         <div className="lg:hidden">
           <div className="p-4 pt-8 flex flex-col items-center text-center">
             <div className="w-24 h-24 mb-4 overflow-hidden bg-gray-100" style={avatarStyle}>
@@ -80,12 +95,15 @@ export const generateMobileLayout = (params: LayoutParams): string => `
             }
           </div>
           <div className="p-4">
-            <div className="grid gap-5" style={{ gridTemplateColumns: '1fr', gridAutoRows: '64px' }}>
-              {sortedBlocks.map(block => (
-                <div key={block.id} style={{ gridRow: \`span \${block.rowSpan}\` }}>
-                  <Block block={{ ...block, gridColumn: undefined, gridRow: undefined }} />
-                </div>
-              ))}
+            <div className="grid" style={{ gridTemplateColumns: 'repeat(${MOBILE_GRID_CONFIG.columns}, 1fr)', gridAutoRows: '${MOBILE_GRID_CONFIG.rowHeight}px', gap: '${MOBILE_GRID_CONFIG.gap}px' }}>
+              {sortedBlocks.map(block => {
+                const mobile = getMobileLayout(block)
+                return (
+                  <div key={block.id} style={{ gridColumn: \`span \${mobile.colSpan}\`, gridRow: \`span \${mobile.rowSpan}\` }}>
+                    <Block block={{ ...block, gridColumn: undefined, gridRow: undefined }} />
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>`;

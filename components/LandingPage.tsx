@@ -13,6 +13,7 @@ import {
   Grid3X3,
   Palette,
   Server,
+  BookOpen,
 } from 'lucide-react';
 import BlockPreview from './BlockPreview';
 import { BlockData, BlockType } from '../types';
@@ -118,6 +119,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
               <span className="font-bold text-lg tracking-tight">OpenBento</span>
             </div>
             <div className="flex items-center gap-3">
+              <a
+                href={`${import.meta.env.BASE_URL}doc`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-gray-600 hover:text-black hover:bg-gray-100 transition-all"
+              >
+                <BookOpen size={18} />
+                <span>Docs</span>
+              </a>
               <a
                 href="https://github.com/yoanbernabeu/openbento"
                 target="_blank"
@@ -699,6 +709,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
               <span className="font-semibold">OpenBento</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-gray-500">
+              <a
+                href={`${import.meta.env.BASE_URL}doc`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-black transition-colors flex items-center gap-2"
+              >
+                <BookOpen size={16} /> Docs
+              </a>
               <a
                 href="https://github.com/yoanbernabeu/openbento"
                 target="_blank"
