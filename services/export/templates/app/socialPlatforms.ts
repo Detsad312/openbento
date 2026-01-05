@@ -33,4 +33,16 @@ const SOCIAL_PLATFORMS: Record<string, { icon: IconType | LucideIcon; brandColor
   website: { icon: Globe, brandColor: '#6B7280', buildUrl: (h) => h.startsWith('http') ? h : \`https://\${h}\` },
   custom: { icon: LinkIcon, brandColor: '#6B7280', buildUrl: (h) => h },
 }
+
+// Format follower count: 220430 → "220k", 1500000 → "1.5M"
+const formatFollowerCount = (count: number | undefined): string => {
+  if (count === undefined || count === null) return ''
+  if (count < 1000) return String(count)
+  if (count < 1000000) {
+    const k = count / 1000
+    return k >= 100 ? \`\${Math.round(k)}k\` : \`\${k.toFixed(k % 1 === 0 ? 0 : 1)}k\`
+  }
+  const m = count / 1000000
+  return m >= 100 ? \`\${Math.round(m)}M\` : \`\${m.toFixed(m % 1 === 0 ? 0 : 1)}M\`
+}
 `;
